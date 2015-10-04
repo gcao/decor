@@ -23,7 +23,7 @@ module Decor
           define_method name do |*args|
             puts "generated #{name}"
             instance_exec m.name, *args, &block
-            m.bind(self).call
+            m.bind(self).call *args
           end
         ensure
           orig_method_added.call(name)
@@ -53,3 +53,34 @@ A.new.test
 #decor test
 #test
 #
+
+puts "----------------------"
+
+module Strict
+  def self.included target
+    target.extend Decor
+    target.extend ClassMethods
+  end
+
+  module ClassMethods
+    def match *types
+      puts "match #{types.inspect[1..-2]}"
+      decor do |method, *args|
+
+      end
+    end
+  end
+end
+
+class B
+  include Strict
+
+  match Integer
+  match Integer => Integer
+  match Integer, Integer => Integer
+  def test *arg
+  end
+end
+
+B.new.test 'test'
+
